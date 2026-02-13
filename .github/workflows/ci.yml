@@ -26,3 +26,11 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
