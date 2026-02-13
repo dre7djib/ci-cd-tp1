@@ -30,6 +30,7 @@ jobs:
   deploy:
     needs: validate
     runs-on: ubuntu-latest
+    github.ref == 'refs/heads/main'
     steps:
       - name: Deploy to Render
         run: |
