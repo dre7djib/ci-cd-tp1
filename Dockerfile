@@ -16,4 +16,4 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY src/ ./src/
 
-CMD ["node", "src/index.js"]
+CMD ["node", "src/index.ts"]
