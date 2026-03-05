@@ -1,4 +1,4 @@
-name: CI
+name: deploy
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  ci:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
