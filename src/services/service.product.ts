@@ -7,6 +7,11 @@ type Product = {
 let products: Product[] = [];
 let nextId = 1;
 
+export const resetProducts = (): void => {
+  products = [];
+  nextId = 1;
+};
+
 export const createProduct = (name: string, price: number): Product => {
   const product: Product = { id: nextId++, name, price };
   products.push(product);
@@ -42,4 +47,12 @@ export const deleteProduct = (id: number): boolean => {
     return true;
   }
   return false;
+};
+
+export const getAverageProductPrice = (): number => {
+  const allProducts = getAllProducts();
+  if (allProducts.length === 0) {
+    return 0;
+  }
+  return allProducts.reduce((acc, curr) => acc + curr.price, 0) / allProducts.length;
 };
