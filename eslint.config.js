@@ -14,6 +14,21 @@ module.exports = [
       reportUnusedDisableDirectives: true
     }
   },
-  js.configs.recommended
+  js.configs.recommended,
+  {
+    files: ["**/*.test.js", "**/*.spec.js"],
+    languageOptions: {
+      globals: {
+        describe: "readonly",
+        test: "readonly",
+        it: "readonly",
+        expect: "readonly",
+        beforeAll: "readonly",
+        beforeEach: "readonly",
+        afterAll: "readonly",
+        afterEach: "readonly"
+      }
+    }
+  }
 ];
 
