@@ -1,19 +1,25 @@
-FROM node:22-alpine AS deps
-
-EXPOSE 3000
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci
+
+COPY tsconfig.json ./
+COPY src/ ./src/
+RUN npm run build
 
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json ./
-COPY src/ ./src/
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-CMD ["node", "src/index.ts"]
+COPY --from=builder /app/dist ./dist
+COPY index.js ./
+
+EXPOSE 3000
+
+CMD ["node", "index.js"]
