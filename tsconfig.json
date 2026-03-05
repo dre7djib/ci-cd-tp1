@@ -4,12 +4,11 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
-    "allowJs": true,
-    "checkJs": true,
-    "noEmit": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "outDir": "dist",
+    "rootDir": "src",
+    "types": ["node", "jest"]
   },
-  "include": ["index.js"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
-
