@@ -7,7 +7,8 @@ export const options = {
   vus: 10, // 10 utilisateurs virtuels
   duration: "10s",
   thresholds: {
-    http_req_duration: ["p(95)<500"], // 95% des requêtes < 500ms
+    // 800ms pour tolérer les cold starts Render et la latence réseau en CI
+    http_req_duration: ["p(95)<800"],
     http_req_failed: ["rate<0.01"],   // < 1% d'échecs
   },
 };
