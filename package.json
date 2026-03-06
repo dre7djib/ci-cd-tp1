@@ -10,9 +10,13 @@
     "lint": "node ./node_modules/eslint/bin/eslint.js index.js",
     "ts": "node ./node_modules/typescript/bin/tsc --noEmit",
     "test": "node ./node_modules/jest/bin/jest.js",
+    "load-test": "k6 run load-test.js",
+    "seed": "npm run build && node dist/scripts/seed.js",
     "prepare": "node -e \"try{require('husky').install()}catch(e){process.exit(0)}\""
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
+    "dotenv": "^17.3.1",
     "express": "^4.19.2"
   },
   "devDependencies": {
