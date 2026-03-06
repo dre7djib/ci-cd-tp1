@@ -37,12 +37,16 @@ jobs:
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL_STAGING }}"
 
-      - name: Install k6
-        uses: grafana/setup-k6-action@v1
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
         with:
-          k6-version: v0.49.0
+          filename: load-test.js
+          flags: --out json=results.json
 
-      - name: Performance Test
-        run: npm run load-test
+      - name: Upload results to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: results.json
 
       
