@@ -1,58 +1,87 @@
-type Product = {
+import { supabase } from "../config/db";
+
+export type Product = {
   id: number;
-  name: string;
-  price: number;
+  name: string | null;
+  price: number | null;
 };
 
-let products: Product[] = [];
-let nextId = 1;
-
-export const resetProducts = (): void => {
-  products = [];
-  nextId = 1;
+export const resetProducts = async (): Promise<void> => {
+  await supabase.from("product").delete().gte("id", 0);
 };
 
-export const createProduct = (name: string, price: number): Product => {
-  const product: Product = { id: nextId++, name, price };
-  products.push(product);
-  return product;
+export const createProduct = async (
+  name: string,
+  price: number
+): Promise<Product> => {
+  const { data, error } = await supabase
+    .from("product")
+    .insert({ name, price })
+    .select()
+    .single();
+  if (error) throw error;
+  return data as Product;
 };
 
-export const getProduct = (id: number): Product | undefined => {
-  return products.find(p => p.id === id);
-};
-
-export const getAllProducts = (): Product[] => {
-  return products;
-};
-
-export const updateProduct = (id: number, name?: string, price?: number): Product | undefined => {
-  const product = products.find(p => p.id === id);
-  if (!product) {
-    return undefined;
+export const getProduct = async (id: number): Promise<Product | undefined> => {
+  const { data, error } = await supabase
+    .from("product")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") return undefined;
+    throw error;
   }
-  if (name !== undefined) {
-    product.name = name;
-  }
-  if (price !== undefined) {
-    product.price = price;
-  }
-  return product;
+  return data as Product;
 };
 
-export const deleteProduct = (id: number): boolean => {
-  const index = products.findIndex(p => p.id === id);
-  if (index >= 0) {
-    products.splice(index, 1);
-    return true;
-  }
-  return false;
+export const getAllProducts = async (): Promise<Product[]> => {
+  const { data, error } = await supabase.from("product").select("*");
+  if (error) throw error;
+  return (data ?? []) as Product[];
 };
 
-export const getAverageProductPrice = (): number => {
-  const allProducts = getAllProducts();
-  if (allProducts.length === 0) {
-    return 0;
+export const updateProduct = async (
+  id: number,
+  name?: string,
+  price?: number
+): Promise<Product | undefined> => {
+  const updates: Partial<{ name: string; price: number }> = {};
+  if (name !== undefined) updates.name = name;
+  if (price !== undefined) updates.price = price;
+  if (Object.keys(updates).length === 0) {
+    return getProduct(id);
   }
-  return allProducts.reduce((acc, curr) => acc + curr.price, 0) / allProducts.length;
+  const { data, error } = await supabase
+    .from("product")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") return undefined;
+    throw error;
+  }
+  return data as Product;
+};
+
+export const deleteProduct = async (id: number): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from("product")
+    .delete()
+    .eq("id", id)
+    .select("id");
+  if (error) throw error;
+  return (data?.length ?? 0) > 0;
+};
+
+export const getAverageProductPrice = async (): Promise<number> => {
+  const allProducts = await getAllProducts();
+  const withPrice = allProducts.filter((p) => p.price != null);
+  if (withPrice.length === 0) return 0;
+  return (
+    withPrice.reduce((acc, curr) => acc + (curr.price ?? 0), 0) /
+    withPrice.length
+  );
 };
