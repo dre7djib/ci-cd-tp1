@@ -1,0 +1,47 @@
+name: deploy
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Get version from package.json
+        id: version
+        run: echo "version=$(jq -r '.version' package.json)" >> $GITHUB_OUTPUT
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npm run ts
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+      - name: Trigger Render deploy webhook
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          IMAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Build the Docker image URL using the username and version
+          img_url="docker.io/${DOCKERHUB_USERNAME}/ci-cd-ynov:${IMAGE_VERSION}"
+          # Encode the image URL for safe transmission over HTTP
+          encoded=$(echo -n "$img_url" | jq -sRr @uri)
+          # Trigger deployment by calling the Render deploy webhook with the encoded image URL as a parameter
+          curl -X POST "${RENDER_DEPLOY_HOOK_URL}&imgURL=${encoded}"
