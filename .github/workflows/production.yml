@@ -1,11 +1,11 @@
-name: deploy
+name: production
 
 on:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
-  deploy:
+  production:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
