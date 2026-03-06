@@ -40,7 +40,7 @@ jobs:
           IMAGE_VERSION: ${{ steps.version.outputs.version }}
         run: |
           # Build the Docker image URL using the username and version
-          img_url="docker.io/${DOCKERHUB_USERNAME}/ci-cd-ynov@${IMAGE_VERSION}"
+          img_url="docker.io/${DOCKERHUB_USERNAME}/ci-cd-ynov:${IMAGE_VERSION}"
           # Encode the image URL for safe transmission over HTTP
           encoded=$(echo -n "$img_url" | jq -sRr @uri)
           # Trigger deployment by calling the Render deploy webhook with the encoded image URL as a parameter
