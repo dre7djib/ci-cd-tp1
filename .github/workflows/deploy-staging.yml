@@ -36,4 +36,19 @@ jobs:
       - name: Trigger Render deploy webhook
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL_STAGING }}"
-        
+
+      - name: Run local k6 test
+        uses: grafana/k6-action@v0.2.0
+        env:
+          BASE_URL: ${{ secrets.STAGING_URL }}
+        with:
+          filename: load-test.js
+          flags: --out json=results.json
+
+      - name: Upload results to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: results.json
+
+      

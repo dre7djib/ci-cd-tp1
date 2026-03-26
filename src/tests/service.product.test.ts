@@ -1,4 +1,16 @@
 import { jest } from "@jest/globals";
+
+jest.mock("../config/redis", () => ({
+  redisClient: { isOpen: false, on: jest.fn() },
+  connectRedis: jest.fn(async () => {}),
+  disconnectRedis: jest.fn(async () => {}),
+  isRedisAvailable: (): boolean => false,
+  cacheGetJson: jest.fn(async () => null),
+  cacheSetJson: jest.fn(async () => {}),
+  cacheDelKeys: jest.fn(async () => {}),
+  cacheDelPattern: jest.fn(async () => {}),
+}));
+
 import * as productService from "../services/service.product";
 
 const emptyResult = { data: [], error: null };
