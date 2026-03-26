@@ -17,7 +17,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "dotenv": "^17.3.1",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "redis": "^5.11.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
