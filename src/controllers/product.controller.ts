@@ -48,13 +48,22 @@ export const getById = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const create = async (req: Request, res: Response): Promise<void> => {
-  const { name, price } = (req.body as { name?: unknown; price?: unknown }) || {};
+  const { name, price, description } =
+    (req.body as { name?: unknown; price?: unknown; description?: unknown }) || {};
   if (typeof name !== "string" || typeof price !== "number") {
     res.status(400).json({ error: "Invalid payload" });
     return;
   }
+  if (
+    description !== undefined &&
+    description !== null &&
+    typeof description !== "string"
+  ) {
+    res.status(400).json({ error: "Invalid payload" });
+    return;
+  }
   try {
-    const product = await createProduct(name, price);
+    const product = await createProduct(name, price, description);
     res.status(201).json(product);
   } catch (err) {
     if (handleDbError(err, res)) return;
@@ -68,20 +77,20 @@ export const update = async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: "Invalid product id" });
     return;
   }
-  const { name, price } = (req.body as { name?: unknown; price?: unknown }) || {};
+  const { name, price, description } =
+    (req.body as { name?: unknown; price?: unknown; description?: unknown }) || {};
   if (
     (name !== undefined && typeof name !== "string") ||
-    (price !== undefined && typeof price !== "number")
+    (price !== undefined && typeof price !== "number") ||
+    (description !== undefined &&
+      description !== null &&
+      typeof description !== "string")
   ) {
     res.status(400).json({ error: "Invalid payload" });
     return;
   }
   try {
-    const product = await updateProduct(
-      id,
-      name as string | undefined,
-      price as number | undefined
-    );
+    const product = await updateProduct(id, name, price, description);
     if (!product) {
       res.status(404).json({ error: "Product not found" });
       return;

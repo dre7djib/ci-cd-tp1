@@ -10,6 +10,7 @@ export type Product = {
   id: number;
   name: string | null;
   price: number | null;
+  description: string | null;
 };
 
 const CACHE_PREFIX = "cache:product";
@@ -40,11 +41,12 @@ export const resetProducts = async (): Promise<void> => {
 
 export const createProduct = async (
   name: string,
-  price: number
+  price: number,
+  description?: string | null
 ): Promise<Product> => {
   const { data, error } = await supabase
     .from("product")
-    .insert({ name, price })
+    .insert({ name, price, description: description ?? null })
     .select()
     .single();
   if (error) throw error;
@@ -85,11 +87,14 @@ export const getAllProducts = async (): Promise<Product[]> => {
 export const updateProduct = async (
   id: number,
   name?: string,
-  price?: number
+  price?: number,
+  description?: string | null
 ): Promise<Product | undefined> => {
-  const updates: Partial<{ name: string; price: number }> = {};
+  const updates: Partial<{ name: string; price: number; description: string | null }> =
+    {};
   if (name !== undefined) updates.name = name;
   if (price !== undefined) updates.price = price;
+  if (description !== undefined) updates.description = description;
   if (Object.keys(updates).length === 0) {
     return getProduct(id);
   }
