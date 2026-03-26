@@ -6,6 +6,7 @@ import {
   updateProduct,
   deleteProduct,
 } from "../services/service.product";
+import { isValidProductPrice } from "../utils/productPrice";
 
 const UNIQUE_VIOLATION_CODE = "23505";
 
@@ -54,6 +55,10 @@ export const create = async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: "Invalid payload" });
     return;
   }
+  if (!isValidProductPrice(price)) {
+    res.status(400).json({ error: "Invalid price" });
+    return;
+  }
   if (
     description !== undefined &&
     description !== null &&
@@ -87,6 +92,10 @@ export const update = async (req: Request, res: Response): Promise<void> => {
       typeof description !== "string")
   ) {
     res.status(400).json({ error: "Invalid payload" });
+    return;
+  }
+  if (price !== undefined && !isValidProductPrice(price)) {
+    res.status(400).json({ error: "Invalid price" });
     return;
   }
   try {
