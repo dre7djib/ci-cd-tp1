@@ -14,3 +14,11 @@ export const supabase: SupabaseClient = createClient(
   supabaseUrl,
   supabaseServiceRoleKey
 );
+
+/** Lightweight round-trip to PostgREST (no row body) for readiness probes. */
+export async function pingSupabase(): Promise<boolean> {
+  const { error } = await supabase
+    .from("product")
+    .select("id", { head: true });
+  return !error;
+}

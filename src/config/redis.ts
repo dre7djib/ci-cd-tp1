@@ -101,6 +101,17 @@ export async function disconnectRedis(): Promise<void> {
   connected = false;
 }
 
+/** True if the client is connected and responds to PING (for readiness probes). */
+export async function pingRedis(): Promise<boolean> {
+  if (!redisClient.isOpen) return false;
+  try {
+    const pong = await redisClient.ping();
+    return pong === "PONG";
+  } catch {
+    return false;
+  }
+}
+
 export async function cacheGetJson<T>(key: string): Promise<T | null> {
   if (!isRedisAvailable()) return null;
   try {
