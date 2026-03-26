@@ -29,6 +29,16 @@ module.exports = [
         afterEach: "readonly"
       }
     }
+  },
+  {
+    files: ["load-test.js"],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: "module",
+      globals: {
+        __ENV: "readonly"
+      }
+    }
   }
 ];
 

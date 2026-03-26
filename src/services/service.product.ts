@@ -1,4 +1,10 @@
 import { supabase } from "../config/db";
+import {
+  cacheDelKeys,
+  cacheDelPattern,
+  cacheGetJson,
+  cacheSetJson,
+} from "../config/redis";
 
 export type Product = {
   id: number;
@@ -6,8 +12,30 @@ export type Product = {
   price: number | null;
 };
 
+const CACHE_PREFIX = "cache:product";
+const CACHE_TTL_SEC = 300;
+
+const cacheKeys = {
+  item: (id: number) => `${CACHE_PREFIX}:item:${id}`,
+  list: () => `${CACHE_PREFIX}:list`,
+};
+
+async function invalidateProductListCache(): Promise<void> {
+  await cacheDelKeys(cacheKeys.list());
+}
+
+async function invalidateProductItemCache(id: number): Promise<void> {
+  await cacheDelKeys(cacheKeys.item(id));
+}
+
+async function invalidateAllProductCache(): Promise<void> {
+  await cacheDelPattern(`${CACHE_PREFIX}:item:*`);
+  await cacheDelKeys(cacheKeys.list());
+}
+
 export const resetProducts = async (): Promise<void> => {
   await supabase.from("product").delete().gte("id", 0);
+  await invalidateAllProductCache();
 };
 
 export const createProduct = async (
@@ -20,10 +48,15 @@ export const createProduct = async (
     .select()
     .single();
   if (error) throw error;
-  return data as Product;
+  const product = data as Product;
+  await invalidateProductListCache();
+  return product;
 };
 
 export const getProduct = async (id: number): Promise<Product | undefined> => {
+  const cached = await cacheGetJson<Product>(cacheKeys.item(id));
+  if (cached) return cached;
+
   const { data, error } = await supabase
     .from("product")
     .select("*")
@@ -33,13 +66,20 @@ export const getProduct = async (id: number): Promise<Product | undefined> => {
     if (error.code === "PGRST116") return undefined;
     throw error;
   }
-  return data as Product;
+  const product = data as Product;
+  await cacheSetJson(cacheKeys.item(id), product, CACHE_TTL_SEC);
+  return product;
 };
 
 export const getAllProducts = async (): Promise<Product[]> => {
+  const cached = await cacheGetJson<Product[]>(cacheKeys.list());
+  if (cached) return cached;
+
   const { data, error } = await supabase.from("product").select("*");
   if (error) throw error;
-  return (data ?? []) as Product[];
+  const products = (data ?? []) as Product[];
+  await cacheSetJson(cacheKeys.list(), products, CACHE_TTL_SEC);
+  return products;
 };
 
 export const updateProduct = async (
@@ -63,7 +103,10 @@ export const updateProduct = async (
     if (error.code === "PGRST116") return undefined;
     throw error;
   }
-  return data as Product;
+  const product = data as Product;
+  await invalidateProductItemCache(id);
+  await invalidateProductListCache();
+  return product;
 };
 
 export const deleteProduct = async (id: number): Promise<boolean> => {
@@ -73,7 +116,12 @@ export const deleteProduct = async (id: number): Promise<boolean> => {
     .eq("id", id)
     .select("id");
   if (error) throw error;
-  return (data?.length ?? 0) > 0;
+  const deleted = (data?.length ?? 0) > 0;
+  if (deleted) {
+    await invalidateProductItemCache(id);
+    await invalidateProductListCache();
+  }
+  return deleted;
 };
 
 export const getAverageProductPrice = async (): Promise<number> => {
