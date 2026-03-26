@@ -45,8 +45,8 @@ describe("Product service", () => {
 
   test("returns average price", async () => {
     jest.spyOn(productService, "getAllProducts").mockResolvedValue([
-      { id: 1, name: "Product 1", price: 100 },
-      { id: 2, name: "Product 2", price: 50 },
+      { id: 1, name: "Product 1", price: 100, description: null },
+      { id: 2, name: "Product 2", price: 50, description: null },
     ]);
     const averagePrice = await productService.getAverageProductPrice();
     expect(averagePrice).toBe(75);
@@ -62,7 +62,7 @@ describe("Product service", () => {
 
   test("returns positive value", async () => {
     jest.spyOn(productService, "getAllProducts").mockResolvedValue([
-      { id: 1, name: "Product 1", price: 100 },
+      { id: 1, name: "Product 1", price: 100, description: null },
     ]);
     const averagePrice = await productService.getAverageProductPrice();
     expect(averagePrice).toBe(100);
